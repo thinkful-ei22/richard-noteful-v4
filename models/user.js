@@ -2,13 +2,13 @@
 
 const mongoose = require('mongoose');
 
-const UserSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   fullname: String,
   username: { type: String, required: true, unique: true},
   password: String
 });
 
-UserSchema.set('toObject', {
+userSchema.set('toObject', {
   virtuals: true,     // include built-in virtual `id`
   versionKey: false,  // remove `__v` version key
   transform: (doc, ret) => {
@@ -17,12 +17,16 @@ UserSchema.set('toObject', {
   }
 });
 
-UserSchema.method.serialize = function () {
-  return {
-    id: this._id,
-    fullname: this.fullname,
-    username: this.username,
-  };
+userSchema.methods.validatePassword = function (password) {
+  return password === this.password;
 };
 
-module.exports = mongoose.model('User', UserSchema);
+// UserSchema.method.serialize = function () {
+//   return {
+//     id: this._id,
+//     fullname: this.fullname,
+//     username: this.username,
+//   };
+// };
+
+module.exports = mongoose.model('User', userSchema);

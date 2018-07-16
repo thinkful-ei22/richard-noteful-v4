@@ -1,6 +1,7 @@
 'use strict';
 
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   fullname: String,
@@ -18,15 +19,11 @@ userSchema.set('toObject', {
 });
 
 userSchema.methods.validatePassword = function (password) {
-  return password === this.password;
+  return bcrypt.compare(password, this.password);
 };
 
-// UserSchema.method.serialize = function () {
-//   return {
-//     id: this._id,
-//     fullname: this.fullname,
-//     username: this.username,
-//   };
-// };
+userSchema.statics.hashPassword = function (password) {
+  return bcrypt.hash(password, 10);
+};
 
 module.exports = mongoose.model('User', userSchema);

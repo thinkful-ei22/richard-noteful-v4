@@ -13,8 +13,9 @@ router.use('/', passport.authenticate('jwt', { session: false, failWithError: tr
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
+  const userId = req.user.id;
 
-  Folder.find()
+  Folder.find({userId})
     .sort('name')
     .then(results => {
       res.json(results);
@@ -27,6 +28,7 @@ router.get('/', (req, res, next) => {
 /* ========== GET/READ A SINGLE ITEM ========== */
 router.get('/:id', (req, res, next) => {
   const { id } = req.params;
+  const userId = req.user.id;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     const err = new Error('The `id` is not valid');
@@ -34,7 +36,7 @@ router.get('/:id', (req, res, next) => {
     return next(err);
   }
 
-  Folder.findById(id)
+  Folder.findOne({_id: id, userId})
     .then(result => {
       if (result) {
         res.json(result);
@@ -50,8 +52,9 @@ router.get('/:id', (req, res, next) => {
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
   const { name } = req.body;
+  const userId = req.user.id;
 
-  const newFolder = { name };
+  const newFolder = { name, userId };
 
   /***** Never trust users - validate input *****/
   if (!name) {
@@ -77,6 +80,7 @@ router.post('/', (req, res, next) => {
 router.put('/:id', (req, res, next) => {
   const { id } = req.params;
   const { name } = req.body;
+  const userId = req.user.id;
 
   /***** Never trust users - validate input *****/
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -93,7 +97,7 @@ router.put('/:id', (req, res, next) => {
 
   const updateFolder = { name };
 
-  Folder.findByIdAndUpdate(id, updateFolder, { new: true })
+  Folder.updateOne({_id: id, userId}, updateFolder, { new: true })
     .then(result => {
       if (result) {
         res.json(result);
@@ -113,6 +117,7 @@ router.put('/:id', (req, res, next) => {
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
 router.delete('/:id', (req, res, next) => {
   const { id } = req.params;
+  const userId = req.user.id;
 
   /***** Never trust users - validate input *****/
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -121,7 +126,7 @@ router.delete('/:id', (req, res, next) => {
     return next(err);
   }
 
-  const folderRemovePromise = Folder.findByIdAndRemove(id);
+  const folderRemovePromise = Folder.deleteOne({_id: id, userId});
 
   const noteRemovePromise = Note.updateMany(
     { folderId: id },

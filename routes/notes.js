@@ -12,7 +12,8 @@ function validateFolderId(folderId, userId) {
   if (folderId === undefined) {
     return Promise.resolve();
   }
-  if (!mongoose.Types.ObjectId.isValid(folderId)) {
+  
+  if (folderId !== '' &&!mongoose.Types.ObjectId.isValid(folderId)) { 
     const err = new Error('The `folderId` is not valid');
     err.status = 400;
     return Promise.reject(err);
@@ -138,10 +139,13 @@ router.post('/', (req, res, next) => {
   }
 
   const newNote = { title, content, folderId, tags, userId };
-
+  if (folderId === '') { 
+    delete newNote.folderId;
+  }
+  
   Promise.all([
-    validateFolderId(folderId, userId),
-    validateTagId(tags, userId)
+    validateFolderId(newNote.folderId, userId),
+    validateTagId(newNote.tags, userId)
   ])
     .then(() => {
       return Note.create(newNote);

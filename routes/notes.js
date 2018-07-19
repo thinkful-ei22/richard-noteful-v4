@@ -9,11 +9,11 @@ const Folder = require('../models/folder');
 const Tag = require('../models/tag');
 
 function validateFolderId(folderId, userId) {
-  if (folderId === undefined) {
+  if (folderId === undefined || folderId === null) {
     return Promise.resolve();
   }
   
-  if (folderId !== '' &&!mongoose.Types.ObjectId.isValid(folderId)) { 
+  if (folderId !== '' && !mongoose.Types.ObjectId.isValid(folderId)) { 
     const err = new Error('The `folderId` is not valid');
     err.status = 400;
     return Promise.reject(err);
@@ -197,9 +197,13 @@ router.put('/:id', (req, res, next) => {
 
   const updateNote = { title, content, folderId, tags, userId };
   
+  if (folderId === '') {
+    updateNote.folderId = null;
+  }
+
   Promise.all([
-    validateFolderId(folderId, userId),
-    validateTagId(tags, userId)
+    validateFolderId(updateNote.folderId, userId),
+    validateTagId(updateNote.tags, userId)
   ])
     .then(() => {
       return Note.findOneAndUpdate({_id: id, userId}, updateNote, { new: true });

@@ -155,7 +155,7 @@ describe.only('Noteful API - Users', function () {
           .then(res => {
             expect(res).to.have.status(201);
             expect(res).to.be.a('object');
-            expect(res.body).to.include.keys('fullname', 'username');
+            expect(res.body).to.have.keys('id', 'fullname', 'username');
             expect(res.body.fullname).to.equal(fullname);
             expect(res.body.username).to.equal(username);
             return User.findOne({username});
